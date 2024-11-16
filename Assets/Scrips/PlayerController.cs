@@ -7,6 +7,9 @@ public class PlayerController : MonoBehaviour
     public float speed = 12f;
     public float Run = 1;
 
+    private Vector3 directionMovement = Vector3.zero;
+    private Vector3 movement = Vector3.zero;
+
     public float jumpHeight = 3f;
     public float gravity = -9.8f;
     public Transform groundCheck;
@@ -16,6 +19,9 @@ public class PlayerController : MonoBehaviour
     public Vector3 velocity;
     public bool isGrounded;
     public bool isRun;
+    private bool blockRotation = false;
+    public new Transform camera;
+
 
     // Variables para magia y agacharse
     public GameObject magicEffectPrefab; // Prefab de la magia
@@ -44,6 +50,8 @@ public class PlayerController : MonoBehaviour
             AttackMagic();
         }
 
+        BlockRotation();
+
         // Agacharse
         Crouch();
     }
@@ -64,10 +72,19 @@ public class PlayerController : MonoBehaviour
             Run = 1;
         }
 
+        Vector3 forward = camera.forward;
+        forward.y = 0;
+        forward.Normalize();
 
+        Vector3 right = camera.right;
+        forward.y = 0;
+        forward.Normalize(); ;
 
+        Vector3 move = right * x + forward * z;
+        movement.y += gravity * Time.deltaTime;
 
-        Vector3 move = transform.right * x + transform.forward * z;
+        movement = move * speed * Time.deltaTime;
+
 
         animator.SetFloat("X", x);
         animator.SetFloat("Z", z);
@@ -83,7 +100,6 @@ public class PlayerController : MonoBehaviour
             else
             {
                 animator.SetBool("isRunning", false);
-
             }
         }
         else
@@ -93,6 +109,13 @@ public class PlayerController : MonoBehaviour
         }
 
         controller.Move(move * speed * Time.deltaTime * Run);
+
+        Debug.Log(move);
+
+        if ((move.x != 0 || move.z != 0) && !blockRotation)
+        {
+            transform.rotation = Quaternion.LookRotation(move).normalized;
+        }
     }
 
     private void Jump()
@@ -135,6 +158,17 @@ public class PlayerController : MonoBehaviour
         {
             controller.height = 2f; // Volver a la altura normal
             animator.SetBool("isCrouching", false); // Desactivar animación de agacharse
+        }
+    }
+
+    private void BlockRotation() {
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
+        {
+            blockRotation = true;
+        }
+        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S))
+        {
+            blockRotation = false;
         }
     }
 }
