@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: d8a082762208c5e4884bc9d33d8071ec
+  - enabled: 1
+    path: Assets/bosque oscuro.unity
+    guid: 7a030475a318e5c40b6fe7776197ca9a
   m_configObjects: {}
