@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField]
+    private InputManagerSO inputManagerSO;
     public CharacterController controller;
     public Animator animator;  // Referencia al Animator
     public float speed = 12f;
@@ -17,6 +19,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask groundMask;
 
     public Vector3 velocity;
+    private Vector3 direction;
     public bool isGrounded;
     public bool isRun;
     private bool blockRotation = false;
@@ -27,110 +30,35 @@ public class PlayerController : MonoBehaviour
     public GameObject magicEffectPrefab; // Prefab de la magia
     public Transform magicSpawnPoint;
 
-    private void Update()
+    private void OnEnable()
     {
-        // Comprobamos si el jugador está tocando el suelo
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-
-        // Si está en el suelo, no aplicamos gravedad adicional
-        if (isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f; // Reajustamos la velocidad vertical cuando está en el suelo
-        }
-
-        // Movimiento del jugador
-        MovePlayer();
-
-        // Salto
-        Jump();
-
-        // Ataque de magia (Raycast)
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            AttackMagic();
-        }
-
-        BlockRotation();
-
-        // Agacharse
-        Crouch();
+        inputManagerSO.OnJump += Jumping;
+        inputManagerSO.OnMove += Move;
+        inputManagerSO.OnAttack += Attack;
+        inputManagerSO.OnCrouch += Crouch;
+        inputManagerSO.OnCrouchCanceled += CrouchCanceled;
+        inputManagerSO.OnRun += Running;
+        inputManagerSO.OnRunCanceled += RunCanceled;
     }
 
-    private void MovePlayer()
+    private void Move(Vector2 ctx)
     {
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-
-        if (Input.GetKey(KeyCode.LeftShift)) // Usamos GetKey para comprobar si la tecla se mantiene presionada
-        {
-            isRun = true;
-            Run = 2;
-        }
-        else
-        {
-            isRun = false;
-            Run = 1;
-        }
-
-        Vector3 forward = camera.forward;
-        forward.y = 0;
-        forward.Normalize();
-
-        Vector3 right = camera.right;
-        forward.y = 0;
-        forward.Normalize(); ;
-
-        Vector3 move = right * x + forward * z;
-        movement.y += gravity * Time.deltaTime;
-
-        movement = move * speed * Time.deltaTime;
-
-
-        animator.SetFloat("X", x);
-        animator.SetFloat("Z", z);
-        // Animación de caminar/correr
-        if (x != 0 || z != 0)
-        {
-
-            animator.SetBool("Walk", true);
-            if (isRun)
-            {
-                animator.SetBool("isRunning", true);
-            }
-            else
-            {
-                animator.SetBool("isRunning", false);
-            }
-        }
-        else
-        {
-            
-            animator.SetBool("Walk", false);
-        }
-
-        controller.Move(move * speed * Time.deltaTime * Run);
-
-        Debug.Log(move);
-
-        if ((move.x != 0 || move.z != 0) && !blockRotation)
-        {
-            transform.rotation = Quaternion.LookRotation(move).normalized;
-        }
+        direction = new Vector3(ctx.x, -9.8f, ctx.y);
     }
 
-    private void Jump()
+    private void Jumping()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        Debug.Log("JUMP");
+        if (isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("Jump"); // Trigger para animación de salto
         }
-
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
-    private void AttackMagic()
+    private void Attack()
     {
         // Aquí usamos un Raycast para disparar el ataque mágico
         RaycastHit hit;
@@ -149,24 +77,99 @@ public class PlayerController : MonoBehaviour
 
     private void Crouch()
     {
-        if (Input.GetKeyDown(KeyCode.C))
+        controller.height = 0.5f; // Reducir altura cuando el personaje se agacha
+        animator.SetBool("isCrouching", true); // Activar animación de agacharse
+    }
+
+    private void CrouchCanceled()
+    {
+        controller.height = 2f; // Volver a la altura normal
+        animator.SetBool("isCrouching", false); // Desactivar animación de agacharse
+    }
+
+    private void Running()
+    {
+        isRun = true;
+        Run = 2;
+    }
+    private void RunCanceled()
+    {
+        isRun = false;
+        Run = 1;
+    }
+
+    private void Update()
+    {
+        // Comprobamos si el jugador está tocando el suelo
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        // Si está en el suelo, no aplicamos gravedad adicional
+        if (isGrounded && velocity.y < 0)
         {
-            controller.height = 0.5f; // Reducir altura cuando el personaje se agacha
-            animator.SetBool("isCrouching", true); // Activar animación de agacharse
+            velocity.y = -2f; // Reajustamos la velocidad vertical cuando está en el suelo
         }
-        else if (Input.GetKeyUp(KeyCode.C))
+
+        BlockRotation();
+        // Movimiento del jugador
+        MovePlayer();
+    }
+
+    private void MovePlayer()
+    {
+        Vector3 forward = camera.forward;
+        forward.y = 0;
+        forward.Normalize();
+
+        Vector3 right = camera.right;
+        forward.y = 0;
+        forward.Normalize(); ;
+
+        Vector3 move = (right * direction.x + forward * direction.z);
+
+        movement = move * speed * Time.deltaTime;
+        movement.y += gravity * Time.deltaTime;
+
+        animator.SetFloat("X", direction.x);
+        animator.SetFloat("Z", direction.z);
+
+        WalkToRun();
+
+        controller.Move(movement);
+
+        if ((move.x != 0 || move.z != 0) && !blockRotation)
         {
-            controller.height = 2f; // Volver a la altura normal
-            animator.SetBool("isCrouching", false); // Desactivar animación de agacharse
+            transform.rotation = Quaternion.LookRotation(move).normalized;
         }
     }
 
-    private void BlockRotation() {
+    private void WalkToRun()
+    {
+        // Animación de caminar/correr
+        if (direction.x != 0 || direction.z != 0)
+        {
+            animator.SetBool("Walk", true);
+            if (isRun)
+            {
+                animator.SetBool("isRunning", true);
+            }
+            else
+            {
+                animator.SetBool("isRunning", false);
+            }
+        }
+        else
+        {
+            animator.SetBool("Walk", false);
+        }
+    }
+
+    private void BlockRotation()
+    {
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
         {
             blockRotation = true;
         }
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S))
+        if (direction.z > 0)
         {
             blockRotation = false;
         }
