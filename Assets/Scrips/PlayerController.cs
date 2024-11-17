@@ -90,12 +90,12 @@ public class PlayerController : MonoBehaviour
     private void Running()
     {
         isRun = true;
-        Run = 2;
+        Run = 6;
     }
     private void RunCanceled()
     {
         isRun = false;
-        Run = 1;
+        Run = 3;
     }
 
     private void Update()
