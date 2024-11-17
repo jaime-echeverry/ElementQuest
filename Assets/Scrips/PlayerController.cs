@@ -1,6 +1,8 @@
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, Destructible
 {
     [SerializeField]
     private InputManagerSO inputManagerSO;
@@ -11,6 +13,7 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 directionMovement = Vector3.zero;
     private Vector3 movement = Vector3.zero;
+    private AudioSource AudioSource;
 
     public float jumpHeight = 3f;
     public float gravity = -9.8f;
@@ -24,7 +27,9 @@ public class PlayerController : MonoBehaviour
     public bool isRun;
     private bool blockRotation = false;
     public new Transform camera;
-
+    private float life = 100;
+    private float shootDistance = 100f;
+    private float damage = 20f;
 
     // Variables para magia y agacharse
     public GameObject magicEffectPrefab; // Prefab de la magia
@@ -34,6 +39,7 @@ public class PlayerController : MonoBehaviour
     {
         inputManagerSO.OnJump += Jumping;
         inputManagerSO.OnMove += Move;
+        inputManagerSO.OnMoveCanceled += MoveCanceled;
         inputManagerSO.OnAttack += Attack;
         inputManagerSO.OnCrouch += Crouch;
         inputManagerSO.OnCrouchCanceled += CrouchCanceled;
@@ -41,9 +47,37 @@ public class PlayerController : MonoBehaviour
         inputManagerSO.OnRunCanceled += RunCanceled;
     }
 
+    void Start()
+    {
+        AudioSource = GetComponent<AudioSource>();
+    }
+
     private void Move(Vector2 ctx)
     {
+        AudioSource.Play();
         direction = new Vector3(ctx.x, -9.8f, ctx.y);
+    }
+
+    private void MoveCanceled(Vector2 ctx)
+    {
+        AudioSource.Pause();
+        direction = new Vector3(ctx.x, -9.8f, ctx.y);
+    }
+
+    private void Update()
+    {
+        // Comprobamos si el jugador está tocando el suelo
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        // Si está en el suelo, no aplicamos gravedad adicional
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f; // Reajustamos la velocidad vertical cuando está en el suelo
+        }
+
+        BlockRotation();
+        // Movimiento del jugador
+        MovePlayer();
     }
 
     private void Jumping()
@@ -62,13 +96,18 @@ public class PlayerController : MonoBehaviour
     {
         // Aquí usamos un Raycast para disparar el ataque mágico
         RaycastHit hit;
-        if (Physics.Raycast(magicSpawnPoint.position, magicSpawnPoint.forward, out hit, 100f))
+        if (Physics.Raycast(magicSpawnPoint.position, magicSpawnPoint.forward, out hit, shootDistance))
         {
             // Se puede hacer algo con el objeto que es impactado, por ejemplo, hacerle daño
             Debug.Log("Magia impactó en: " + hit.collider.name);
 
             // Si deseas instanciar un prefab, lo puedes hacer aquí
             Instantiate(magicEffectPrefab, hit.point, Quaternion.identity);
+
+            //Mira si impacta en enemigo
+            if (hit.transform.TryGetComponent(out Destructible damageSystem)) {
+                damageSystem.getDamage(20);
+            }
         }
 
         // Activar la animación de ataque mágico
@@ -96,22 +135,6 @@ public class PlayerController : MonoBehaviour
     {
         isRun = false;
         Run = 3;
-    }
-
-    private void Update()
-    {
-        // Comprobamos si el jugador está tocando el suelo
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
-
-        // Si está en el suelo, no aplicamos gravedad adicional
-        if (isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f; // Reajustamos la velocidad vertical cuando está en el suelo
-        }
-
-        BlockRotation();
-        // Movimiento del jugador
-        MovePlayer();
     }
 
     private void MovePlayer()
@@ -172,6 +195,15 @@ public class PlayerController : MonoBehaviour
         if (direction.z > 0)
         {
             blockRotation = false;
+        }
+    }
+
+    public void getDamage(float damage)
+    {
+        life -= damage;
+        if (life <= 0) {
+            animator.SetBool("Die", true);
+            SceneManager.LoadScene("Menu");
         }
     }
 }

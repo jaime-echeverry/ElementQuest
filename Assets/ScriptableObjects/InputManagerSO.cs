@@ -19,6 +19,7 @@ public class InputManagerSO : ScriptableObject
     public event Action OnRun;
     public event Action OnRunCanceled;
     public event Action<Vector2> OnMove;
+    public event Action<Vector2> OnMoveCanceled;
 
     private void OnEnable()
     {
@@ -26,7 +27,7 @@ public class InputManagerSO : ScriptableObject
         myControls.Gameplay.Enable();
         myControls.Gameplay.Jump.started += Jump;
         myControls.Gameplay.Move.performed += Move;
-        myControls.Gameplay.Move.canceled += Move;
+        myControls.Gameplay.Move.canceled += MoveCanceled;
         myControls.Gameplay.Attack.started += Attack;
         myControls.Gameplay.Green.started += Green;
         myControls.Gameplay.Red.started += Red;
@@ -45,6 +46,11 @@ public class InputManagerSO : ScriptableObject
     private void Move(InputAction.CallbackContext ctx)
     {
         OnMove?.Invoke(ctx.ReadValue<Vector2>());
+    }
+
+    private void MoveCanceled(InputAction.CallbackContext ctx)
+    {
+        OnMoveCanceled?.Invoke(ctx.ReadValue<Vector2>());
     }
 
     private void Jump(InputAction.CallbackContext ctx)

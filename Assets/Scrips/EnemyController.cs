@@ -1,16 +1,19 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
-public class EnemyController : MonoBehaviour
+public class EnemyController : MonoBehaviour, Destructible
 {
+    [SerializeField]
+    public float maxHealth = 100f;     // Vida máxima
+    private Animator animator;  // Referencia al Animator
     public NavMeshAgent agent;
     public Transform[] patrolPoints;   // Lista de puntos para rondas (waypoints)
     public float chaseDistance = 10f;  // Distancia de persecución
     public float attackDistance = 2f;  // Distancia de ataque
     public float reactionTime = 2f;   // Tiempo de reacción después de ser atacado
     public Transform hidePosition;     // Posición de escondite cuando la vida es baja
-
-    public float maxHealth = 100f;     // Vida máxima
     public float currentHealth;       // Vida actual
 
     public enum EnemyState { Patrolling, Chasing, Attacked, Resting, Hiding }
@@ -22,6 +25,7 @@ public class EnemyController : MonoBehaviour
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player").transform; // Asume que el jugador tiene la etiqueta "Player"
         currentHealth = maxHealth;
         currentState = EnemyState.Patrolling;
@@ -147,5 +151,14 @@ public class EnemyController : MonoBehaviour
         Debug.Log("Enemigo muerto");
         // Aquí puedes añadir la lógica para eliminar al enemigo o hacer que se destruya
         Destroy(gameObject);
+    }
+
+    public void getDamage(float damage)
+    {
+        currentHealth -= damage;
+        if (currentHealth <= 0)
+        {
+            animator.SetBool("Die", true);
+        }
     }
 }
