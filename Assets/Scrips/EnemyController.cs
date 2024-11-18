@@ -7,9 +7,11 @@ using UnityEngine.SceneManagement;
 public class EnemyController : MonoBehaviour, Destructible
 {
     [SerializeField]
-    public float maxHealth = 100f;     // Vida máxima
+    public float maxHealth;     // Vida máxima
     [SerializeField]
-    AudioClip DeathAudio;
+    public AudioSource roar;
+    [SerializeField]
+    public AudioSource die;
     private Animator animator;  // Referencia al Animator
     public NavMeshAgent agent;
     public Transform[] patrolPoints;   // Lista de puntos para rondas (waypoints)
@@ -27,6 +29,7 @@ public class EnemyController : MonoBehaviour, Destructible
 
     private void Start()
     {
+        Debug.Log(maxHealth.ToString());
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         player = GameObject.FindGameObjectWithTag("Player").transform; // Asume que el jugador tiene la etiqueta "Player"
@@ -159,11 +162,11 @@ public class EnemyController : MonoBehaviour, Destructible
     public void getDamage(float damage)
     {
         currentHealth -= damage;
+
         if (currentHealth <= 0)
         {
-            AudioSource audio = GetComponent<AudioSource>();
-            audio.Pause();
-            audio.PlayOneShot(DeathAudio);
+            roar.Pause();
+            die.Play();
             animator.SetBool("Die", true);
         }
     }

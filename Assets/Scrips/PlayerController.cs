@@ -109,7 +109,7 @@ public class PlayerController : MonoBehaviour, Destructible
 
             //Mira si impacta en enemigo
             if (hit.transform.TryGetComponent(out Destructible damageSystem)) {
-                damageSystem.getDamage(20);
+                damageSystem.getDamage(damage);
             }
         }
 
