@@ -6,6 +6,10 @@ public class PlayerController : MonoBehaviour, Destructible
 {
     [SerializeField]
     private InputManagerSO inputManagerSO;
+    [SerializeField]
+    public AudioSource spell;
+    [SerializeField]
+    public AudioSource steps;
     public CharacterController controller;
     public Animator animator;  // Referencia al Animator
     public float speed = 12f;
@@ -13,7 +17,6 @@ public class PlayerController : MonoBehaviour, Destructible
 
     private Vector3 directionMovement = Vector3.zero;
     private Vector3 movement = Vector3.zero;
-    private AudioSource AudioSource;
 
     public float jumpHeight = 3f;
     public float gravity = -9.8f;
@@ -49,18 +52,17 @@ public class PlayerController : MonoBehaviour, Destructible
 
     void Start()
     {
-        AudioSource = GetComponent<AudioSource>();
     }
 
     private void Move(Vector2 ctx)
     {
-        AudioSource.Play();
+        steps.Play();
         direction = new Vector3(ctx.x, -9.8f, ctx.y);
     }
 
     private void MoveCanceled(Vector2 ctx)
     {
-        AudioSource.Pause();
+        steps.Pause();
         direction = new Vector3(ctx.x, -9.8f, ctx.y);
     }
 
@@ -96,6 +98,7 @@ public class PlayerController : MonoBehaviour, Destructible
     {
         // Aquí usamos un Raycast para disparar el ataque mágico
         RaycastHit hit;
+        spell.Play();
         if (Physics.Raycast(magicSpawnPoint.position, magicSpawnPoint.forward, out hit, shootDistance))
         {
             // Se puede hacer algo con el objeto que es impactado, por ejemplo, hacerle daño
