@@ -1,6 +1,8 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour, Destructible
 {
@@ -10,6 +12,8 @@ public class PlayerController : MonoBehaviour, Destructible
     public AudioSource spell;
     [SerializeField]
     public AudioSource steps;
+    [SerializeField]
+    Image lifeBar;
     public CharacterController controller;
     public Animator animator;  // Referencia al Animator
     public float speed = 12f;
@@ -30,9 +34,10 @@ public class PlayerController : MonoBehaviour, Destructible
     public bool isRun;
     private bool blockRotation = false;
     public new Transform camera;
-    private float life = 100;
+    private float life;
     private float shootDistance = 100f;
     private float damage = 20f;
+    private float maxLife=100;
 
     // Variables para magia y agacharse
     public GameObject magicEffectPrefab; // Prefab de la magia
@@ -52,6 +57,7 @@ public class PlayerController : MonoBehaviour, Destructible
 
     void Start()
     {
+        life = maxLife;
     }
 
     private void Move(Vector2 ctx)
@@ -204,6 +210,8 @@ public class PlayerController : MonoBehaviour, Destructible
     public void getDamage(float damage)
     {
         life -= damage;
+        lifeBar.fillAmount = life / maxLife;
+
         if (life <= 0) {
             animator.SetBool("Die", true);
             SceneManager.LoadScene("Menu");
