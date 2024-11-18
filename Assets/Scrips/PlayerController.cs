@@ -16,13 +16,13 @@ public class PlayerController : MonoBehaviour, Destructible
     Image lifeBar;
     public CharacterController controller;
     public Animator animator;  // Referencia al Animator
-    public float speed = 12f;
-    public float Run = 1;
+    public float speed = 20f;
+    public float Run = 4;
 
     private Vector3 directionMovement = Vector3.zero;
     private Vector3 movement = Vector3.zero;
 
-    public float jumpHeight = 3f;
+    public float jumpHeight = 6f;
     public float gravity = -9.8f;
     public Transform groundCheck;
     public float groundDistance = 0.4f;

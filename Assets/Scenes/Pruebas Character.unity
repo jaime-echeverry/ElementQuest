@@ -482,6 +482,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39f31938006cb8a44b54b99a21f410f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inputManagerSO: {fileID: 0}
+  spell: {fileID: 0}
+  steps: {fileID: 0}
+  lifeBar: {fileID: 0}
   controller: {fileID: 813077741}
   animator: {fileID: 1203813705}
   speed: 1
@@ -496,6 +500,7 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   isGrounded: 0
   isRun: 0
+  camera: {fileID: 0}
   magicEffectPrefab: {fileID: 2010726235392590401, guid: ac19871722bd3bf40a11523fcf11ca64, type: 3}
   magicSpawnPoint: {fileID: 1872847287}
 --- !u!4 &813077743

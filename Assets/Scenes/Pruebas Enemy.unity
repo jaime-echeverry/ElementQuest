@@ -374,6 +374,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccc2862011d452844bc3f4783a878456, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  roar: {fileID: 0}
+  die: {fileID: 0}
   agent: {fileID: 287798220}
   patrolPoints:
   - {fileID: 1199233293}
@@ -382,7 +385,6 @@ MonoBehaviour:
   attackDistance: 2
   reactionTime: 2
   hidePosition: {fileID: 415452060}
-  maxHealth: 100
   currentHealth: 0
   currentState: 0
   player: {fileID: 824356087}

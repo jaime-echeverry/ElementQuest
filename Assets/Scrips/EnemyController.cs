@@ -17,7 +17,7 @@ public class EnemyController : MonoBehaviour, Destructible
     public NavMeshAgent agent;
     public Transform[] patrolPoints;   // Lista de puntos para rondas (waypoints)
     public float chaseDistance = 10f;  // Distancia de persecución
-    public float attackDistance = 2f;  // Distancia de ataque
+    public float attackDistance = 1f;  // Distancia de ataque
     public float reactionTime = 2f;   // Tiempo de reacción después de ser atacado
     public Transform hidePosition;     // Posición de escondite cuando la vida es baja
     public float currentHealth;       // Vida actual
@@ -87,6 +87,12 @@ public class EnemyController : MonoBehaviour, Destructible
         // Si el enemigo llega lo suficientemente cerca del jugador, cambia a atacar
         if (Vector3.Distance(transform.position, player.position) <= attackDistance)
         {
+            animator.SetBool("attacking",true);
+
+            if (player.TryGetComponent(out Destructible damageSystem))
+            {
+                damageSystem.getDamage(10f);
+            }
             // Lógica de ataque aquí (puedes agregar animaciones o efectos de daño)
             Debug.Log("Enemigo atacando al jugador");
         }
@@ -166,6 +172,7 @@ public class EnemyController : MonoBehaviour, Destructible
 
         if (currentHealth <= 0)
         {
+            agent.speed = 0;
             roar.Pause();
             die.Play();
             animator.SetBool("Die", true);
